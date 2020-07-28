@@ -1,0 +1,26 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
+    <f:section title="${%Title}">
+        <f:entry title="${%UleskaInstances}">
+            <f:repeatable var="uleskaInstance" items="${instance.uleskaInstances}" add="${%NewInstance}">
+                <table>
+                    <f:entry title="${%InstanceName}">
+                        <f:textbox name="name" value="${uleskaInstance.getName()}"/>
+                    </f:entry>
+
+                    <f:entry title="${%InstanceUrl}">
+                        <f:textbox name="url" value="${uleskaInstance.getUrl()}"/>
+                    </f:entry>
+
+                    <f:entry title="${%ApiToken}" field="credentialsId">
+                        <c:select name="sonar.credentialsId" value="${uleskaInstance.getCredentialsId()}"/>
+                    </f:entry>
+
+                    <f:entry>
+                        <f:repeatableDeleteButton value="${%DeleteInstance}"/>
+                    </f:entry>
+                </table>
+            </f:repeatable>
+        </f:entry>
+    </f:section>
+</j:jelly>
