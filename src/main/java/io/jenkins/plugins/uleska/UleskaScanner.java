@@ -1,5 +1,7 @@
 package io.jenkins.plugins.uleska;
 
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -10,12 +12,14 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import jenkins.tasks.SimpleBuildStep;
+import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.jenkinsci.Symbol;
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
@@ -27,30 +31,24 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
     private final static String USER_AGENT = "uleska-jenkins-plugin";
     private final static String SCAN_URL = "/SecureDesigner/api/v1/applications/%s/versions/%s/scan";
 
-    private final String instanceUrl;
-    private final String apiToken;
+    private final String uleskaInstanceName;
     private final String applicationId;
     private final String versionId;
     private final boolean propagateFailure;
 
     @DataBoundConstructor
-    public UleskaScanner(String instanceUrl, String apiToken,
+    public UleskaScanner(String uleskaInstanceName,
                          String applicationId,
                          String versionId,
                          boolean propagateFailure) {
-        this.instanceUrl = instanceUrl;
-        this.apiToken = apiToken;
+        this.uleskaInstanceName = uleskaInstanceName;
         this.applicationId = applicationId;
         this.versionId = versionId;
         this.propagateFailure = propagateFailure;
     }
 
-    public String getInstanceUrl() {
-        return instanceUrl;
-    }
-
-    public String getApiToken() {
-        return apiToken;
+    public String getUleskaInstanceName() {
+        return uleskaInstanceName;
     }
 
     public String getApplicationId() {
@@ -65,26 +63,38 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
         return propagateFailure;
     }
 
-    private CloseableHttpClient getClient() {
+    private CloseableHttpClient getClient(String apiKey) {
+        Header auth = new BasicHeader("Authorization", "Bearer " + apiKey);
+
         return HttpClientBuilder.create()
-            .setDefaultHeaders(Collections.singletonList(new BasicHeader("Authorization", "Bearer " + apiToken)))
+            .setDefaultHeaders(Collections.singletonList(auth))
             .setUserAgent(USER_AGENT)
             .build();
     }
 
-    private void failOnPropagation(TaskListener taskListener, Exception... exceptions) {
+    private void failOnPropagation(TaskListener taskListener) throws AbortException {
         if (propagateFailure) {
             taskListener.fatalError("Scan failure propagated");
+            throw new AbortException();
         }
+    }
+
+    private UleskaInstance getUleskaInstance() {
+        return UleskaInstance.get(uleskaInstanceName);
     }
 
     @Override
     public void perform(@Nonnull Run<?, ?> run,
                         @Nonnull FilePath filePath,
                         @Nonnull Launcher launcher,
-                        @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
-        CloseableHttpClient client = getClient();
-        String url = instanceUrl + String.format(SCAN_URL, applicationId, versionId);
+                        @Nonnull TaskListener taskListener) throws IOException {
+        UleskaInstance uleskaInstance = getUleskaInstance();
+
+        StringCredentials credentials = CredentialsProvider.findCredentialById(uleskaInstance.getCredentialsId(), StringCredentials.class, run);
+        String apiKey = credentials.getSecret().getPlainText();
+
+        CloseableHttpClient client = getClient(apiKey);
+        String url = uleskaInstance.getUrl() + String.format(SCAN_URL, applicationId, versionId);
 
         taskListener.getLogger().println("Calling " + url);
 
@@ -93,19 +103,13 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
                 taskListener.error("Non 200 status code returned");
                 taskListener.error(response.toString());
 
-                if (propagateFailure) {
-                    taskListener.fatalError("Scan failure propagated");
-                    // TODO: Throw
-                }
+                failOnPropagation(taskListener);
             }
         } catch (IOException ioe) {
             // throw if propagateFailure
-            taskListener.error("Failed due to exception", ioe);
+            taskListener.error("Failed due to exception");
 
-            if (propagateFailure) {
-                taskListener.fatalError("Scan failure propagated");
-                throw ioe;
-            }
+            failOnPropagation(taskListener);
         }
     }
 
@@ -116,6 +120,10 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
             return true;
+        }
+
+        public UleskaInstance[] getUleskaInstances() {
+            return UleskaInstance.all();
         }
 
     }

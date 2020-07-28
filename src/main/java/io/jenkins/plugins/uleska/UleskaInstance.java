@@ -1,8 +1,10 @@
 package io.jenkins.plugins.uleska;
 
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class UleskaInstance implements Serializable {
 
@@ -23,6 +25,19 @@ public class UleskaInstance implements Serializable {
 
     public static UleskaInstance[] all() {
         return UleskaGlobalConfiguration.get().getUleskaInstances();
+    }
+
+    public static UleskaInstance get(String name) {
+        UleskaInstance[] uleskaInstances = all();
+
+        if (StringUtils.isEmpty(name) && uleskaInstances.length > 0) {
+            return uleskaInstances[0];
+        }
+
+        return Arrays.stream(uleskaInstances)
+            .filter(instance -> instance.getName().equals(name))
+            .findFirst()
+            .orElse(null);
     }
 
     public String getName() {
