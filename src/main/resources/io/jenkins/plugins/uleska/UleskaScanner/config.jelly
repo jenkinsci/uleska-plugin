@@ -1,0 +1,27 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <!-- Instance URL -->
+    <f:entry title="${%InstanceUrl}" field="instanceUrl">
+        <f:textbox/>
+    </f:entry>
+
+    <!-- API Token -->
+    <f:entry title="${%ApiToken}" field="apiToken">
+        <f:textbox/>
+    </f:entry>
+
+    <!-- Application ID -->
+    <f:entry title="${%ApplicationId}" field="applicationId">
+        <f:textbox/>
+    </f:entry>
+
+    <!-- Version ID -->
+    <f:entry title="${%VersionId}" field="versionId">
+        <f:textbox/>
+    </f:entry>
+
+    <!-- Block on failure -->
+    <f:entry title="${%BlockOnFailure}" field="propagateFailure">
+        <f:checkbox/>
+    </f:entry>
+</j:jelly>
