@@ -1,6 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
 
+    <j:set var="scannerUrl" value="${rootURL}/descriptor/UleskaScanner/"/>
     <j:set var="uleskaInstances" value="${descriptor.getUleskaInstances()}"/>
 
     <j:choose>
@@ -10,7 +11,7 @@
             </f:entry>
         </j:when>
 
-        <j:when test="${uleskaInstances.size() gt 1}">
+        <j:otherwise>
             <!-- Render choice (not necessary if there is only 1) -->
             <f:entry title="${%UleskaInstance}">
                 <select name="instance.uleskaInstanceName">
@@ -21,32 +22,21 @@
                     </j:forEach>
                 </select>
             </f:entry>
-        </j:when>
 
-        <j:otherwise>
-            <!-- Choose only instance -->
-            <j:set var="uleskaInstance" value="${uleskaInstances[0]}"/>
+            <!-- Application ID -->
+            <f:entry title="${%ApplicationId}">
+                <f:textbox field="applicationId" checkUrl="'${scannerUrl}checkUUID?value='+escape(this.value)"/>
+            </f:entry>
 
-            <f:entry title="${%UleskaInstance}">
-                ${uleskaInstance.name} - ${uleskaInstance.url}
+            <!-- Version ID -->
+            <f:entry title="${%VersionId}">
+                <f:textbox field="versionId"  checkUrl="'${scannerUrl}checkUUID?value='+escape(this.value)"/>
+            </f:entry>
+
+            <!-- Block on failure -->
+            <f:entry title="${%BlockOnFailure}" field="propagateFailure">
+                <f:checkbox/>
             </f:entry>
         </j:otherwise>
     </j:choose>
-
-    <j:if test="${!empty(uleskaInstances)}">
-        <!-- Application ID -->
-        <f:entry title="${%ApplicationId}" field="applicationId">
-            <f:textbox/>
-        </f:entry>
-
-        <!-- Version ID -->
-        <f:entry title="${%VersionId}" field="versionId">
-            <f:textbox/>
-        </f:entry>
-
-        <!-- Block on failure -->
-        <f:entry title="${%BlockOnFailure}" field="propagateFailure">
-            <f:checkbox/>
-        </f:entry>
-    </j:if>
 </j:jelly>

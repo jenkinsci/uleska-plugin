@@ -1,12 +1,16 @@
 package io.jenkins.plugins.uleska;
 
+import jenkins.org.apache.commons.validator.routines.UrlValidator;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UleskaInstance implements Serializable {
+
+    private static final UrlValidator urlValidator = new UrlValidator();
 
     private static final long serialVersionUID = 1L;
 
@@ -23,21 +27,40 @@ public class UleskaInstance implements Serializable {
         this.credentialsId = credentialsId;
     }
 
-    public static UleskaInstance[] all() {
-        return UleskaGlobalConfiguration.get().getUleskaInstances();
-    }
+    public static String getErrors(String name, String url, String credentialsId) {
+        List<String> errors = new ArrayList<>();
 
-    public static UleskaInstance get(String name) {
-        UleskaInstance[] uleskaInstances = all();
-
-        if (StringUtils.isEmpty(name) && uleskaInstances.length > 0) {
-            return uleskaInstances[0];
+        if (!isNameValid(name)) {
+            errors.add(Messages.UleskaInstance_Errors_NameInvalid());
         }
 
-        return Arrays.stream(uleskaInstances)
-            .filter(instance -> instance.getName().equals(name))
-            .findFirst()
-            .orElse(null);
+        if (!isUrlValid(url)) {
+            errors.add(Messages.UleskaInstance_Errors_UrlInvalid());
+        }
+
+        if (!isCredentialsIdValid(credentialsId)) {
+            errors.add(Messages.UleskaInstance_Errors_CredentialsInvalid());
+        }
+
+        return !errors.isEmpty()
+            ? String.join("; ", errors)
+            : null;
+    }
+
+    public static boolean isNameValid(String name) {
+        return !StringUtils.isEmpty(name);
+    }
+
+    public static boolean isUrlValid(String url) {
+        return urlValidator.isValid(url) && url.lastIndexOf('/') < 8;
+    }
+
+    public static boolean isCredentialsIdValid(String credentialsId) {
+        return !StringUtils.isEmpty(credentialsId);
+    }
+
+    public String getErrors() {
+        return getErrors(name, url, credentialsId);
     }
 
     public String getName() {
