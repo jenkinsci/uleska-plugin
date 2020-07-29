@@ -179,7 +179,7 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
         }
     }
 
-    @Symbol("UleskaScanner")
+    @Symbol("uleskaScanner")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
