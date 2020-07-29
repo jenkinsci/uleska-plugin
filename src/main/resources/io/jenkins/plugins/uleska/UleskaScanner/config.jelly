@@ -7,7 +7,13 @@
     <j:choose>
         <j:when test="${empty(uleskaInstances)}">
             <!-- Point user to configure instance in global -->
-            <f:entry title="${%NoInstances}">
+            <f:entry title="${%UleskaInstance}">
+                <div class="error">
+                    No Uleska instances have been configured in
+                    <a href="${rootURL}/configure" target="_blank">
+                        Global Settings.
+                    </a>
+                </div>
             </f:entry>
         </j:when>
 
@@ -30,11 +36,11 @@
 
             <!-- Version ID -->
             <f:entry title="${%VersionId}">
-                <f:textbox field="versionId"  checkUrl="'${scannerUrl}checkUUID?value='+escape(this.value)"/>
+                <f:textbox field="versionId" checkUrl="'${scannerUrl}checkUUID?value='+escape(this.value)"/>
             </f:entry>
 
             <!-- Block on failure -->
-            <f:entry title="${%BlockOnFailure}" field="propagateFailure">
+            <f:entry title="${%BlockOnFailure}" description="${%BlockOnFailureHelp}" field="propagateFailure">
                 <f:checkbox/>
             </f:entry>
         </j:otherwise>
