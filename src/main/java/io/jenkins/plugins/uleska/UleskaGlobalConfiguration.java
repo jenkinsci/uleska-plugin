@@ -47,7 +47,7 @@ public class UleskaGlobalConfiguration extends GlobalConfiguration {
     public static UleskaInstance getInstance(String name) {
         UleskaInstance[] uleskaInstances = getAllUleskaInstances();
 
-        if (StringUtils.isEmpty(name) && uleskaInstances.length > 0) {
+        if (StringUtils.isBlank(name) && uleskaInstances.length > 0) {
             return uleskaInstances[0];
         }
 

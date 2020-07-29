@@ -53,28 +53,8 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
         this.propagateFailure = propagateFailure;
     }
 
-    public static String getErrors(String uleskaInstanceName, String applicationId, String versionId) {
-        List<String> errors = new ArrayList<>();
-
-        if (!isUleskaInstanceNameValid(uleskaInstanceName)) {
-            errors.add(Messages.UleskaScanner_Errors_InstanceNameInvalid());
-        }
-
-        if (!isUUIDValid(applicationId)) {
-            errors.add(Messages.UleskaScanner_Errors_ApplicationIdInvalid());
-        }
-
-        if (!isUUIDValid(versionId)) {
-            errors.add(Messages.UleskaScanner_Errors_VersionIdInvalid());
-        }
-
-        return !errors.isEmpty()
-            ? String.join("; ", errors)
-            : null;
-    }
-
     public static boolean isUleskaInstanceNameValid(String name) {
-        return !StringUtils.isEmpty(name);
+        return !StringUtils.isBlank(name);
     }
 
     public static boolean isUUIDValid(String uuid) {
@@ -92,7 +72,23 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
     }
 
     public String getErrors() {
-        return getErrors(uleskaInstanceName, applicationId, versionId);
+        List<String> errors = new ArrayList<>();
+
+        if (!isUleskaInstanceNameValid(uleskaInstanceName)) {
+            errors.add(Messages.UleskaScanner_Errors_InstanceNameInvalid());
+        }
+
+        if (!isUUIDValid(applicationId)) {
+            errors.add(Messages.UleskaScanner_Errors_ApplicationIdInvalid());
+        }
+
+        if (!isUUIDValid(versionId)) {
+            errors.add(Messages.UleskaScanner_Errors_VersionIdInvalid());
+        }
+
+        return !errors.isEmpty()
+            ? String.join("; ", errors)
+            : null;
     }
 
     public String getUleskaInstanceName() {

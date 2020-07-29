@@ -27,7 +27,19 @@ public class UleskaInstance implements Serializable {
         this.credentialsId = credentialsId;
     }
 
-    public static String getErrors(String name, String url, String credentialsId) {
+    public static boolean isNameValid(String name) {
+        return !StringUtils.isBlank(name);
+    }
+
+    public static boolean isUrlValid(String url) {
+        return urlValidator.isValid(url) && url.lastIndexOf('/') < 8;
+    }
+
+    public static boolean isCredentialsIdValid(String credentialsId) {
+        return !StringUtils.isBlank(credentialsId);
+    }
+
+    public String getErrors() {
         List<String> errors = new ArrayList<>();
 
         if (!isNameValid(name)) {
@@ -45,22 +57,6 @@ public class UleskaInstance implements Serializable {
         return !errors.isEmpty()
             ? String.join("; ", errors)
             : null;
-    }
-
-    public static boolean isNameValid(String name) {
-        return !StringUtils.isEmpty(name);
-    }
-
-    public static boolean isUrlValid(String url) {
-        return urlValidator.isValid(url) && url.lastIndexOf('/') < 8;
-    }
-
-    public static boolean isCredentialsIdValid(String credentialsId) {
-        return !StringUtils.isEmpty(credentialsId);
-    }
-
-    public String getErrors() {
-        return getErrors(name, url, credentialsId);
     }
 
     public String getName() {
