@@ -1,0 +1,42 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+
+    <j:set var="scannerUrl" value="${rootURL}/descriptor/UleskaScanner/"/>
+    <j:set var="uleskaInstances" value="${descriptor.getUleskaInstances()}"/>
+
+    <j:choose>
+        <j:when test="${empty(uleskaInstances)}">
+            <!-- Point user to configure instance in global -->
+            <f:entry title="${%NoInstances}">
+            </f:entry>
+        </j:when>
+
+        <j:otherwise>
+            <!-- Render choice (not necessary if there is only 1) -->
+            <f:entry title="${%UleskaInstance}">
+                <select name="instance.uleskaInstanceName">
+                    <j:forEach var="option" items="${uleskaInstances}">
+                        <f:option value="${option.name}" selected="${option.name==instance.uleskaInstanceName}">
+                            ${option.name} - ${option.url}
+                        </f:option>
+                    </j:forEach>
+                </select>
+            </f:entry>
+
+            <!-- Application ID -->
+            <f:entry title="${%ApplicationId}">
+                <f:textbox field="applicationId" checkUrl="'${scannerUrl}checkUUID?value='+escape(this.value)"/>
+            </f:entry>
+
+            <!-- Version ID -->
+            <f:entry title="${%VersionId}">
+                <f:textbox field="versionId"  checkUrl="'${scannerUrl}checkUUID?value='+escape(this.value)"/>
+            </f:entry>
+
+            <!-- Block on failure -->
+            <f:entry title="${%BlockOnFailure}" field="propagateFailure">
+                <f:checkbox/>
+            </f:entry>
+        </j:otherwise>
+    </j:choose>
+</j:jelly>
