@@ -1,16 +1,15 @@
 package io.jenkins.plugins.uleska;
 
-import jenkins.org.apache.commons.validator.routines.UrlValidator;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UleskaInstance implements Serializable {
-
-    private static final UrlValidator urlValidator = new UrlValidator();
 
     private static final long serialVersionUID = 1L;
 
@@ -52,7 +51,13 @@ public class UleskaInstance implements Serializable {
     }
 
     public static boolean isUrlValid(String url) {
-        return urlValidator.isValid(url) && url.lastIndexOf('/') < 8;
+        try {
+            new URL(url);
+        } catch (MalformedURLException e) {
+            return false;
+        }
+
+        return url.lastIndexOf('/') < 8;
     }
 
     public static boolean isCredentialsIdValid(String credentialsId) {
