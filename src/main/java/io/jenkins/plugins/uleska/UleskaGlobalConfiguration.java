@@ -58,11 +58,11 @@ public class UleskaGlobalConfiguration extends GlobalConfiguration {
     }
 
     public UleskaInstance[] getUleskaInstances() {
-        return uleskaInstances;
+        return uleskaInstances.clone();
     }
 
     public void setUleskaInstances(UleskaInstance[] uleskaInstances) {
-        this.uleskaInstances = uleskaInstances;
+        this.uleskaInstances = uleskaInstances.clone();
         save();
     }
 
