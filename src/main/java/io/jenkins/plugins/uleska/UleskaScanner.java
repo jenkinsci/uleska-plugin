@@ -14,12 +14,12 @@ import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
 import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.Header;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicHeader;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.message.BasicHeader;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -164,7 +164,7 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
             taskListener.getLogger().println(Messages.UleskaScanner_Info_CallingEndpoint(url));
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(url))) {
-                int statusCode = response.getStatusLine().getStatusCode();
+                int statusCode = response.getCode();
                 if (statusCode < 200 || statusCode > 299) {
                     throw new AbortException(Messages.UleskaScanner_Errors_Non200Status(statusCode));
                 }
