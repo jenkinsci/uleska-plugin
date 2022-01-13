@@ -1,7 +1,9 @@
 package io.jenkins.plugins.uleska;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -12,14 +14,11 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
+import io.jenkins.plugins.uleska.api.HttpFactory;
+import io.jenkins.plugins.uleska.api.HttpScanApi;
+import io.jenkins.plugins.uleska.api.ScanApi;
 import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.message.BasicHeader;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -28,14 +27,12 @@ import org.kohsuke.stapler.QueryParameter;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 public class UleskaScanner extends Recorder implements SimpleBuildStep {
 
-    private final static String USER_AGENT = "uleska-jenkins-plugin";
-    private final static String SCAN_URL = "/SecureDesigner/api/v1/applications/%s/versions/%s/scan";
 
     private final String uleskaInstanceName;
     private final String applicationId;
@@ -130,53 +127,48 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
         return uleskaInstance;
     }
 
-    private CloseableHttpClient getClientWithApiKey(Run<?, ?> run,
-                                                    UleskaInstance uleskaInstance) throws AbortException {
-        String credentialsId = uleskaInstance.getCredentialsId();
-        StringCredentials credentials = CredentialsProvider.findCredentialById(credentialsId, StringCredentials.class, run);
 
-        if (credentials == null) {
-            throw new AbortException(Messages.UleskaScanner_Errors_NoCredentials(credentialsId));
-        }
-
-        String apiKey = credentials.getSecret().getPlainText();
-        Header auth = new BasicHeader("Authorization", "Bearer " + apiKey);
-
-        return HttpClientBuilder.create()
-            .setDefaultHeaders(Collections.singletonList(auth))
-            .setUserAgent(USER_AGENT)
-            .build();
-    }
 
     @Override
     public void perform(@Nonnull Run<?, ?> run,
                         @Nonnull FilePath filePath,
                         @Nonnull Launcher launcher,
                         @Nonnull TaskListener taskListener) throws IOException {
-        try {
-            checkScanner();
+        // try {
+        checkScanner();
 
-            UleskaInstance uleskaInstance = getUleskaInstance();
-            CloseableHttpClient client = getClientWithApiKey(run, uleskaInstance);
+        UleskaInstance uleskaInstance = getUleskaInstance();
 
-            String url = uleskaInstance.getUrl() + String.format(SCAN_URL, applicationId, versionId);
+        char[] apiKey = fetchApiKey(run, uleskaInstance);
+        if (apiKey == null) {
+            throw new AbortException(Messages.UleskaScanner_Errors_NoCredentials(""));
+        }
 
-            taskListener.getLogger().println(Messages.UleskaScanner_Info_CallingEndpoint(url));
+        try(ScanApi scanApi = new HttpScanApi(taskListener, new HttpFactory(), uleskaInstance.getUrl(), apiKey)){
+            scanApi.doScan(UUID.fromString(applicationId), UUID.fromString(versionId));
 
-            try (CloseableHttpResponse response = client.execute(new HttpGet(url))) {
-                int statusCode = response.getCode();
-                if (statusCode < 200 || statusCode > 299) {
-                    throw new AbortException(Messages.UleskaScanner_Errors_Non200Status(statusCode));
-                }
-            }
+            taskListener.getLogger().println("Scan Started");
         } catch (Exception e) {
             if (propagateFailure) {
                 taskListener.fatalError(Messages.UleskaScanner_Errors_PropagatedFailure());
-                throw e;
+                throw new AbortException(e.getMessage());
             } else {
                 taskListener.error(Messages.UleskaScanner_Errors_UnpropagatedFailure(e));
             }
+        }finally {
+            Arrays.fill(apiKey, '*');
         }
+
+
+    }
+
+    private char[] fetchApiKey(Run<?, ?> run, UleskaInstance uleskaInstance){
+        String credentialsId = uleskaInstance.getCredentialsId();
+        StringCredentials credentials = CredentialsProvider.findCredentialById(credentialsId, StringCredentials.class, run);
+        if(credentials == null){
+            return null;
+        }
+        return credentials.getSecret().getPlainText().toCharArray();
     }
 
     @Symbol("uleskaScanner")
