@@ -59,7 +59,7 @@ public class HttpScanApi implements ScanApi {
             try {
                 ((AutoCloseable) resource).close();
             } catch (Exception e) {
-                //log me
+                taskListener.error("Unable to close " + resource.getClass().getSimpleName()  + " because of " + e.getMessage());
             }
         }
     }
