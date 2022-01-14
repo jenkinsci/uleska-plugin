@@ -134,13 +134,12 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
                         @Nonnull FilePath filePath,
                         @Nonnull Launcher launcher,
                         @Nonnull TaskListener taskListener) throws IOException {
-        // try {
         checkScanner();
 
         UleskaInstance uleskaInstance = getUleskaInstance();
 
         char[] apiKey = fetchApiKey(run, uleskaInstance);
-        if (apiKey == null) {
+        if (apiKey.length == 0) {
             throw new AbortException(Messages.UleskaScanner_Errors_NoCredentials(""));
         }
 
@@ -166,7 +165,7 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
         String credentialsId = uleskaInstance.getCredentialsId();
         StringCredentials credentials = CredentialsProvider.findCredentialById(credentialsId, StringCredentials.class, run);
         if(credentials == null){
-            return null;
+            return new char[] {};
         }
         return credentials.getSecret().getPlainText().toCharArray();
     }
