@@ -11,6 +11,8 @@ import java.util.UUID;
 
 public class HttpScanApi implements ScanApi {
 
+    private static final String SCAN_ADDRESS = "%s/SecureDesigner/api/v1/applications/%s/versions/%s/scan";
+
     private final TaskListener taskListener;
     private final HttpFactory httpFactory;
     private final String host;
@@ -25,8 +27,13 @@ public class HttpScanApi implements ScanApi {
 
     @Override
     public void doScan(UUID applicationId, UUID versionId) throws ScanException {
-        String address = String.format("%s/SecureDesigner/api/v1/applications/%s/versions/%s/scan", host, applicationId, versionId);
+        String address = String.format(SCAN_ADDRESS, host, applicationId, versionId);
         doHttpGet(address);
+    }
+
+    @Override
+    public void close() throws Exception {
+        Arrays.fill(this.apiKey, '*');
     }
 
     private void doHttpGet(String address) throws ScanException {
@@ -63,10 +70,4 @@ public class HttpScanApi implements ScanApi {
             }
         }
     }
-
-    @Override
-    public void close() throws Exception {
-        Arrays.fill(this.apiKey, '*');
-    }
-
 }
