@@ -21,7 +21,7 @@ public class HttpScanApi implements ScanApi {
     public HttpScanApi(TaskListener taskListener, HttpFactory httpFactory, String host, char[] apiKey) {
         this.httpFactory = httpFactory;
         this.host = host;
-        this.apiKey = apiKey;
+        this.apiKey = apiKey.clone();
         this.taskListener = taskListener;
     }
 
@@ -32,7 +32,7 @@ public class HttpScanApi implements ScanApi {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         Arrays.fill(this.apiKey, '*');
     }
 

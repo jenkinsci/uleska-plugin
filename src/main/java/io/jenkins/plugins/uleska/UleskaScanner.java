@@ -26,6 +26,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -145,7 +146,6 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
 
         try(ScanApi scanApi = new HttpScanApi(taskListener, new HttpFactory(), uleskaInstance.getUrl(), apiKey)){
             scanApi.doScan(UUID.fromString(applicationId), UUID.fromString(versionId));
-
             taskListener.getLogger().println("Scan Started");
         } catch (Exception e) {
             if (propagateFailure) {
@@ -155,10 +155,8 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
                 taskListener.error(Messages.UleskaScanner_Errors_UnpropagatedFailure(e));
             }
         }finally {
-            Arrays.fill(apiKey, '*');
+           Arrays.fill(apiKey, '*');
         }
-
-
     }
 
     private char[] fetchApiKey(Run<?, ?> run, UleskaInstance uleskaInstance){
