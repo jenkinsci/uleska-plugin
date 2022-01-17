@@ -15,6 +15,7 @@
         <changelist>999999-SNAPSHOT</changelist>
         <jenkins.version>2.266</jenkins.version>
         <java.level>8</java.level>
+
     </properties>
     <name>Uleska Plugin</name>
     <organization>
@@ -95,6 +96,7 @@
             <version>2.14</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>credentials</artifactId>
@@ -116,5 +118,18 @@
             <version>1.15</version>
         </dependency>
 
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>4.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.objenesis</groupId>
+            <artifactId>objenesis</artifactId>
+            <version>3.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
