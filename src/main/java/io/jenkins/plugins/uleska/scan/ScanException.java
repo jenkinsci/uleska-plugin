@@ -1,13 +1,9 @@
-package io.jenkins.plugins.uleska.api;
+package io.jenkins.plugins.uleska.scan;
 
 public class ScanException extends Exception{
 
     public ScanException(Throwable e){
         super(e);
-    }
-
-    public ScanException(String message){
-        super(message);
     }
 
 }

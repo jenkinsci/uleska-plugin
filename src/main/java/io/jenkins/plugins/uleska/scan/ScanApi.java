@@ -1,4 +1,4 @@
-package io.jenkins.plugins.uleska.api;
+package io.jenkins.plugins.uleska.scan;
 
 import java.util.UUID;
 

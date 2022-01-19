@@ -3,22 +3,20 @@ package io.jenkins.plugins.uleska.api;
 import hudson.model.TaskListener;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpResponse;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.UUID;
 
-public class HttpScanApi implements ScanApi {
+public class BaseHttpApi implements AutoCloseable {
 
-    private static final String SCAN_ADDRESS = "%s/SecureDesigner/api/v1/applications/%s/versions/%s/scan";
+    protected final TaskListener taskListener;
+    protected final HttpFactory httpFactory;
+    protected final String host;
+    protected final char[] apiKey;
 
-    private final TaskListener taskListener;
-    private final HttpFactory httpFactory;
-    private final String host;
-    private final char[] apiKey;
-
-    public HttpScanApi(TaskListener taskListener, HttpFactory httpFactory, String host, char[] apiKey) {
+    public BaseHttpApi(TaskListener taskListener, HttpFactory httpFactory, String host, char[] apiKey) {
         this.httpFactory = httpFactory;
         this.host = host;
         this.apiKey = apiKey.clone();
@@ -26,17 +24,11 @@ public class HttpScanApi implements ScanApi {
     }
 
     @Override
-    public void doScan(UUID applicationId, UUID versionId) throws ScanException {
-        String address = String.format(SCAN_ADDRESS, host, applicationId, versionId);
-        doHttpGet(address);
-    }
-
-    @Override
     public void close() {
         Arrays.fill(this.apiKey, '*');
     }
 
-    private void doHttpGet(String address) throws ScanException {
+    protected ClassicHttpResponse doHttpGet(String address) throws HttpException {
         HttpClient client = null;
         try {
             client = httpFactory.build(this.apiKey);
@@ -45,10 +37,11 @@ public class HttpScanApi implements ScanApi {
                 taskListener.getLogger().println("GET request to " + address);
                 response = client.execute(new HttpGet(address));
                 if (!isSuccessful(response)) {
-                    throw new ScanException(response.getReasonPhrase());
+                    throw new HttpException(response.getReasonPhrase());
                 }
+                return (ClassicHttpResponse)response;
             } catch (IOException e) {
-                throw new ScanException(e);
+                throw new HttpException(e);
             } finally {
                 closeResource(response);
             }
@@ -70,4 +63,5 @@ public class HttpScanApi implements ScanApi {
             }
         }
     }
+
 }

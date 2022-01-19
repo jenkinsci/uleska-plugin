@@ -1,9 +1,7 @@
 package io.jenkins.plugins.uleska;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
-import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -15,8 +13,8 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
 import io.jenkins.plugins.uleska.api.HttpFactory;
-import io.jenkins.plugins.uleska.api.HttpScanApi;
-import io.jenkins.plugins.uleska.api.ScanApi;
+import io.jenkins.plugins.uleska.scan.HttpScanApi;
+import io.jenkins.plugins.uleska.scan.ScanApi;
 import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -26,7 +24,6 @@ import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

@@ -1,10 +1,8 @@
-package io.jenkins.plugins.uleska.api;
-
-
-
-
+package io.jenkins.plugins.uleska.scan;
 
 import hudson.model.TaskListener;
+import io.jenkins.plugins.uleska.api.HttpFactory;
+
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
