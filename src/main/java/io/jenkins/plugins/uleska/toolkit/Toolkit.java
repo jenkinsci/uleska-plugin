@@ -4,6 +4,10 @@ import java.util.UUID;
 
 public class Toolkit {
 
+    public Toolkit(String name){
+        this.name = name;
+    }
+
     private UUID id;
     private String name;
     private boolean uleskaApproved;
