@@ -104,6 +104,20 @@ public class HttpToolkitApiTest {
         assertTrue(toolkits.isEmpty());
     }
 
+    @Test
+    public void testFetchToolkitsReturnsEmptyCollectionWhenJsonIsWrong() throws IOException {
+        //given
+        InputStream notJson = stringInputStream("[{this is not json}]");
+        HttpResponse response = mockHttpResponse(HttpStatus.SC_OK,  notJson);
+        given(httpClient.execute(argThat(request -> request.getRequestUri().equals(ADDRESS)))).willReturn(response);
+
+        //when
+        Collection<Toolkit> toolkits = toolkitApi.fetchToolkits();
+
+        //then
+        assertTrue(toolkits.isEmpty());
+    }
+
     private BasicClassicHttpResponse mockHttpResponse(int status, InputStream body) throws IOException {
         BasicClassicHttpResponse response = mock(BasicClassicHttpResponse.class);
         HttpEntity entity = mock(HttpEntity.class);

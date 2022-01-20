@@ -15,45 +15,45 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 
-public class ToolkitServiceTest {
+public class ToolkitLocatorTest {
 
     @InjectMocks
-    private ToolkitService toolkitService;
+    private ToolkitLocator toolkitLocator;
 
     @Mock
     private ToolkitApi toolkitApi;
 
     @Before
-    public void setUp(){
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testFindToolkitByNameReturnsNothingWhenNameIsNull(){
+    public void testFindToolkitByNameReturnsNothingWhenNameIsNull() {
         //given
         String name = null;
 
         //when
-        Optional<Toolkit> maybeToolkit = toolkitService.findByName(name);
+        Optional<Toolkit> maybeToolkit = toolkitLocator.findByName(name);
 
         //then
         assertFalse(maybeToolkit.isPresent());
     }
 
     @Test
-    public void testFindToolkitByNameReturnsNothingWhenNameIsEmpty(){
+    public void testFindToolkitByNameReturnsNothingWhenNameIsEmpty() {
         //given
         String name = "    ";
 
         //when
-        Optional<Toolkit> maybeToolkit = toolkitService.findByName(name);
+        Optional<Toolkit> maybeToolkit = toolkitLocator.findByName(name);
 
         //then
         assertFalse(maybeToolkit.isPresent());
     }
 
     @Test
-    public void testFindByNameReturnsToolkitWhenNameIsTheSame(){
+    public void testFindByNameReturnsToolkitWhenNameIsTheSame() {
         //given
         String name = "My toolkit";
         Toolkit expectedToolkit = new Toolkit(name);
@@ -61,7 +61,7 @@ public class ToolkitServiceTest {
         given(toolkitApi.fetchToolkits()).willReturn(toolkits);
 
         //when
-        Optional<Toolkit> maybeToolkit = toolkitService.findByName(name);
+        Optional<Toolkit> maybeToolkit = toolkitLocator.findByName(name);
 
         //then
         assertTrue(maybeToolkit.isPresent());
@@ -69,7 +69,7 @@ public class ToolkitServiceTest {
     }
 
     @Test
-    public void testFindByNameReturnsToolkitWhenNameIsTheSameButWithSpaces(){
+    public void testFindByNameReturnsToolkitWhenNameIsTheSameButWithSpaces() {
         //given
         String name = "My toolkit";
         String nameWithSpaces = "   " + name + "   ";
@@ -78,7 +78,7 @@ public class ToolkitServiceTest {
         given(toolkitApi.fetchToolkits()).willReturn(toolkits);
 
         //when
-        Optional<Toolkit> maybeToolkit = toolkitService.findByName(name);
+        Optional<Toolkit> maybeToolkit = toolkitLocator.findByName(name);
 
         //then
         assertTrue(maybeToolkit.isPresent());
@@ -86,7 +86,7 @@ public class ToolkitServiceTest {
     }
 
     @Test
-    public void testFindByNameReturnsToolkitWhenNameHasDiffirnetCase(){
+    public void testFindByNameReturnsToolkitWhenNameHasDifferentCase() {
         //given
         String name = "My ToolKit";
         String nameLowerCase = "My toolkit";
@@ -95,7 +95,24 @@ public class ToolkitServiceTest {
         given(toolkitApi.fetchToolkits()).willReturn(toolkits);
 
         //when
-        Optional<Toolkit> maybeToolkit = toolkitService.findByName(name);
+        Optional<Toolkit> maybeToolkit = toolkitLocator.findByName(name);
+
+        //then
+        assertTrue(maybeToolkit.isPresent());
+        assertEquals(expectedToolkit, maybeToolkit.get());
+    }
+
+    @Test
+    public void testFindByNameReturnsToolkitWhenNameHasDifferentCaseAndSpaces() {
+        //given
+        String name = "My ToolKit\t";
+        String nameLowerCase = "My toolkit";
+        Toolkit expectedToolkit = new Toolkit(nameLowerCase);
+        List<Toolkit> toolkits = Arrays.asList(new Toolkit("Bob"), expectedToolkit, new Toolkit("Sally"));
+        given(toolkitApi.fetchToolkits()).willReturn(toolkits);
+
+        //when
+        Optional<Toolkit> maybeToolkit = toolkitLocator.findByName(name);
 
         //then
         assertTrue(maybeToolkit.isPresent());

@@ -2,11 +2,11 @@ package io.jenkins.plugins.uleska.toolkit;
 
 import java.util.Optional;
 
-public class ToolkitService {
+public class ToolkitLocator {
 
     private final ToolkitApi toolkitApi;
 
-    public ToolkitService(ToolkitApi toolkitApi){
+    public ToolkitLocator(ToolkitApi toolkitApi){
         this.toolkitApi = toolkitApi;
     }
 
