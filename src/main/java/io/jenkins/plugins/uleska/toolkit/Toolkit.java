@@ -4,6 +4,11 @@ import java.util.UUID;
 
 public class Toolkit {
 
+    public Toolkit(UUID id, String name){
+        this.id = id;
+        this.name = name;
+    }
+
     public Toolkit(String name){
         this.name = name;
     }

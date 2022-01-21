@@ -2,7 +2,7 @@ package io.jenkins.plugins.uleska.toolkit;
 
 import java.util.Optional;
 
-public class ToolkitLocator {
+public class ToolkitLocator  implements AutoCloseable{
 
     private final ToolkitApi toolkitApi;
 
@@ -12,6 +12,11 @@ public class ToolkitLocator {
 
     public Optional<Toolkit> findByName(String name) {
         return toolkitApi.fetchToolkits().stream().filter(toolkit -> doNamesMatch(toolkit, name)).findAny();
+    }
+
+    @Override
+    public void close() throws Exception {
+        this.toolkitApi.close();
     }
 
     private boolean doNamesMatch(Toolkit toolkit, String searchName){

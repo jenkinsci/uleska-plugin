@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 public class ToolkitLocatorTest {
 
@@ -117,6 +118,16 @@ public class ToolkitLocatorTest {
         //then
         assertTrue(maybeToolkit.isPresent());
         assertEquals(expectedToolkit, maybeToolkit.get());
+    }
+
+    @Test
+    public void testCloseClosesToolkitApi() throws Exception {
+
+        //when
+        toolkitLocator.close();
+
+        //then
+        verify(toolkitApi).close();
     }
 
 }

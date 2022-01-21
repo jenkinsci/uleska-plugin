@@ -16,6 +16,7 @@ public class BaseHttpApi implements AutoCloseable {
     protected final String host;
     protected final char[] apiKey;
 
+
     public BaseHttpApi(TaskListener taskListener, HttpFactory httpFactory, String host, char[] apiKey) {
         this.httpFactory = httpFactory;
         this.host = host;
@@ -27,6 +28,7 @@ public class BaseHttpApi implements AutoCloseable {
     public void close() {
         Arrays.fill(this.apiKey, '*');
     }
+
 
     protected ClassicHttpResponse doHttpGet(String address) throws HttpException {
         HttpClient client = null;
@@ -63,5 +65,7 @@ public class BaseHttpApi implements AutoCloseable {
             }
         }
     }
+
+
 
 }

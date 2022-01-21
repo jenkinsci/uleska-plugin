@@ -10,16 +10,17 @@ import org.apache.hc.core5.http.ClassicHttpResponse;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
 public class HttpToolkitApi extends BaseHttpApi implements ToolkitApi {
 
-    private final static Type TOOLKIT_COLLECTION_TYPE = new TypeToken<Collection<ToolkitWrapper>>() {
+    private static final Type TOOLKIT_COLLECTION_TYPE = new TypeToken<Collection<ToolkitWrapper>>() {
 
     }.getType();
-    private final static String TOOLKIT_ADDRESS = "/SecureDesigner/api/v1/toolkits";
+    private static final String TOOLKIT_ADDRESS = "/SecureDesigner/api/v1/toolkits";
 
     public HttpToolkitApi(TaskListener taskListener,
                           HttpFactory httpFactory,
@@ -30,8 +31,8 @@ public class HttpToolkitApi extends BaseHttpApi implements ToolkitApi {
     @Override
     public Collection<Toolkit> fetchToolkits() {
         try {
-            ClassicHttpResponse response = doHttpGet(TOOLKIT_ADDRESS);
-            Reader json = new InputStreamReader(response.getEntity().getContent());
+            ClassicHttpResponse response = doHttpGet(host + TOOLKIT_ADDRESS);
+            Reader json = new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8);
             return jsonToToolkits(json);
         } catch (Exception e) {
             logError(e);
