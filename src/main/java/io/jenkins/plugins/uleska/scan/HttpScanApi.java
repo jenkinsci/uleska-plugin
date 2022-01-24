@@ -29,7 +29,7 @@ public class HttpScanApi extends BaseHttpApi implements ScanApi {
 
     private void doScan(String address) throws ScanException{
         try {
-            doHttpGet(address);
+            doHttpGet(address, Void.TYPE);
         }catch (HttpException e){
             throw new ScanException(e);
         }

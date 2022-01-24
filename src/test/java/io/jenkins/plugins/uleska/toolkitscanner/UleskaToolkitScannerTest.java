@@ -1,10 +1,11 @@
-package io.jenkins.plugins.uleska;
+package io.jenkins.plugins.uleska.toolkitscanner;
 
 import hudson.model.TaskListener;
 import io.jenkins.plugins.uleska.scan.ScanApi;
 import io.jenkins.plugins.uleska.scan.ScanException;
 import io.jenkins.plugins.uleska.toolkit.Toolkit;
 import io.jenkins.plugins.uleska.toolkit.ToolkitLocator;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -118,19 +119,6 @@ public class UleskaToolkitScannerTest {
 
         //then
         assertFalse(successful);
-    }
-
-    @Test
-    public void testBuildCreatesNewInstanceOfUleskaToolkitScanner(){
-        //given
-        String host = "https://cloud.uleska.com";
-        char[] apkKey = {'a', 'b', 'c'};
-
-        //when
-        UleskaToolkitScanner newScanner = UleskaToolkitScanner.build(taskListener, host, apkKey);
-
-        //then
-        assertNotNull(newScanner);
     }
 
     @Test

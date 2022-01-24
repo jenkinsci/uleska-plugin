@@ -1,12 +1,18 @@
 package io.jenkins.plugins.uleska.api;
 
+import com.google.gson.Gson;
 import hudson.model.TaskListener;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpResponse;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class BaseHttpApi implements AutoCloseable {
@@ -15,7 +21,6 @@ public class BaseHttpApi implements AutoCloseable {
     protected final HttpFactory httpFactory;
     protected final String host;
     protected final char[] apiKey;
-
 
     public BaseHttpApi(TaskListener taskListener, HttpFactory httpFactory, String host, char[] apiKey) {
         this.httpFactory = httpFactory;
@@ -29,8 +34,7 @@ public class BaseHttpApi implements AutoCloseable {
         Arrays.fill(this.apiKey, '*');
     }
 
-
-    protected ClassicHttpResponse doHttpGet(String address) throws HttpException {
+    protected <T> T doHttpGet(String address, Type type) throws HttpException {
         HttpClient client = null;
         try {
             client = httpFactory.build(this.apiKey);
@@ -41,7 +45,11 @@ public class BaseHttpApi implements AutoCloseable {
                 if (!isSuccessful(response)) {
                     throw new HttpException(response.getReasonPhrase());
                 }
-                return (ClassicHttpResponse)response;
+                if (type == Void.TYPE) {
+                    return null;
+                }
+
+                return convertJsonToObject(response, type);
             } catch (IOException e) {
                 throw new HttpException(e);
             } finally {
@@ -50,6 +58,13 @@ public class BaseHttpApi implements AutoCloseable {
         } finally {
             closeResource(client);
         }
+    }
+
+    public <T> T convertJsonToObject(HttpResponse response, Type type) throws IOException {
+        HttpEntity entity = ((ClassicHttpResponse) response).getEntity();
+        Reader json = new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8);
+        Gson gson = new Gson();
+        return gson.fromJson(json, type);
     }
 
     private boolean isSuccessful(HttpResponse response) {
@@ -61,11 +76,9 @@ public class BaseHttpApi implements AutoCloseable {
             try {
                 ((AutoCloseable) resource).close();
             } catch (Exception e) {
-                taskListener.error("Unable to close " + resource.getClass().getSimpleName()  + " because of " + e.getMessage());
+                taskListener.error("Unable to close " + resource.getClass().getSimpleName() + " because of " + e.getMessage());
             }
         }
     }
-
-
 
 }

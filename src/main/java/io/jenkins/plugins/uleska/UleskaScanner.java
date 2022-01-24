@@ -15,6 +15,8 @@ import hudson.util.FormValidation;
 import io.jenkins.plugins.uleska.api.HttpFactory;
 import io.jenkins.plugins.uleska.scan.HttpScanApi;
 import io.jenkins.plugins.uleska.scan.ScanApi;
+import io.jenkins.plugins.uleska.toolkitscanner.UleskaToolkitScanner;
+import io.jenkins.plugins.uleska.toolkitscanner.UleskaToolkitScannerFactory;
 import jenkins.tasks.SimpleBuildStep;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -31,20 +33,22 @@ import java.util.UUID;
 
 public class UleskaScanner extends Recorder implements SimpleBuildStep {
 
-
     private final String uleskaInstanceName;
     private final String applicationId;
     private final String versionId;
+    private final String toolkitName;
     private final boolean propagateFailure;
 
     @DataBoundConstructor
     public UleskaScanner(String uleskaInstanceName,
                          String applicationId,
                          String versionId,
+                         String toolkitName,
                          boolean propagateFailure) {
         this.uleskaInstanceName = uleskaInstanceName;
         this.applicationId = applicationId;
         this.versionId = versionId;
+        this.toolkitName = toolkitName;
         this.propagateFailure = propagateFailure;
     }
 
@@ -102,6 +106,8 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
         return versionId;
     }
 
+    public String getToolkitName() { return toolkitName; }
+
     public boolean isPropagateFailure() {
         return propagateFailure;
     }
@@ -125,8 +131,6 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
         return uleskaInstance;
     }
 
-
-
     @Override
     public void perform(@Nonnull Run<?, ?> run,
                         @Nonnull FilePath filePath,
@@ -137,29 +141,60 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
         UleskaInstance uleskaInstance = getUleskaInstance();
 
         char[] apiKey = fetchApiKey(run, uleskaInstance);
-        if (apiKey.length == 0) {
-            throw new AbortException(Messages.UleskaScanner_Errors_NoCredentials(""));
-        }
-
-        try(ScanApi scanApi = new HttpScanApi(taskListener, new HttpFactory(), uleskaInstance.getUrl(), apiKey)){
-            scanApi.doScan(UUID.fromString(applicationId), UUID.fromString(versionId));
-            taskListener.getLogger().println("Scan Started");
-        } catch (Exception e) {
-            if (propagateFailure) {
-                taskListener.fatalError(Messages.UleskaScanner_Errors_PropagatedFailure());
-                throw new AbortException(e.getMessage());
-            } else {
-                taskListener.error(Messages.UleskaScanner_Errors_UnpropagatedFailure(e));
+        try {
+            if (apiKey.length == 0) {
+                throw new AbortException(Messages.UleskaScanner_Errors_NoCredentials(""));
             }
-        }finally {
-           Arrays.fill(apiKey, '*');
+
+            boolean successful;
+            if (StringUtils.isNotBlank(this.toolkitName)) {
+                successful = scanWithToolkits(taskListener, uleskaInstance.getUrl(), apiKey);
+            } else {
+                successful = scan(taskListener, uleskaInstance.getUrl(), apiKey);
+            }
+
+            if (successful) {
+                taskListener.getLogger().println("Scan Started");
+            } else {
+                if (propagateFailure) {
+                    taskListener.fatalError(Messages.UleskaScanner_Errors_PropagatedFailure());
+                    throw new AbortException(Messages.UleskaScanner_Errors_PropagatedFailure());
+                } else {
+                    taskListener.error("Scan was unsuccessful");
+                }
+            }
+
+        } finally {
+            Arrays.fill(apiKey, '*');
         }
     }
 
-    private char[] fetchApiKey(Run<?, ?> run, UleskaInstance uleskaInstance){
+    private boolean scanWithToolkits(TaskListener taskListener, String host, char[] apiKey) {
+        boolean successful;
+        UleskaToolkitScannerFactory factory = new UleskaToolkitScannerFactory();
+        try (UleskaToolkitScanner scanner = factory.build(taskListener, host, apiKey)) {
+            successful = scanner.performScan(applicationId, versionId, toolkitName);
+        } catch (Exception e) {
+            successful = false;
+        }
+        return successful;
+    }
+
+    private boolean scan(TaskListener taskListener, String host, char[] apiKey) {
+        boolean successful = true;
+        try (ScanApi scanApi = new HttpScanApi(taskListener, new HttpFactory(), host, apiKey)) {
+            scanApi.doScan(UUID.fromString(applicationId), UUID.fromString(versionId));
+        } catch (Exception e) {
+            taskListener.error(e.getMessage());
+            successful = false;
+        }
+        return successful;
+    }
+
+    private char[] fetchApiKey(Run<?, ?> run, UleskaInstance uleskaInstance) {
         String credentialsId = uleskaInstance.getCredentialsId();
         StringCredentials credentials = CredentialsProvider.findCredentialById(credentialsId, StringCredentials.class, run);
-        if(credentials == null){
+        if (credentials == null) {
             return new char[] {};
         }
         return credentials.getSecret().getPlainText().toCharArray();

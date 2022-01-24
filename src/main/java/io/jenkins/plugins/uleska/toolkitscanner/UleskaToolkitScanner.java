@@ -1,20 +1,13 @@
-package io.jenkins.plugins.uleska;
+package io.jenkins.plugins.uleska.toolkitscanner;
 
 import hudson.model.TaskListener;
-import io.jenkins.plugins.uleska.api.HttpFactory;
-import io.jenkins.plugins.uleska.scan.HttpScanApi;
 import io.jenkins.plugins.uleska.scan.ScanApi;
 import io.jenkins.plugins.uleska.scan.ScanException;
-import io.jenkins.plugins.uleska.toolkit.HttpToolkitApi;
 import io.jenkins.plugins.uleska.toolkit.Toolkit;
-import io.jenkins.plugins.uleska.toolkit.ToolkitApi;
 import io.jenkins.plugins.uleska.toolkit.ToolkitLocator;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class UleskaToolkitScanner implements AutoCloseable {
 
@@ -22,15 +15,7 @@ public class UleskaToolkitScanner implements AutoCloseable {
     private final ToolkitLocator toolkitLocator;
     private final ScanApi scanApi;
 
-    public static UleskaToolkitScanner build(TaskListener taskListener, String host, char[] apiKey) {
-        HttpFactory httpFactory = new HttpFactory();
-        ScanApi scanApi = new HttpScanApi(taskListener, httpFactory, host, apiKey);
-        ToolkitApi toolkitApi = new HttpToolkitApi(taskListener, httpFactory, host, apiKey);
-        ToolkitLocator toolkitLocator = new ToolkitLocator(toolkitApi);
-        return new UleskaToolkitScanner(taskListener, toolkitLocator, scanApi);
-    }
-
-    private UleskaToolkitScanner(TaskListener taskListener, ToolkitLocator toolkitLocator, ScanApi scanApi) {
+    UleskaToolkitScanner(TaskListener taskListener, ToolkitLocator toolkitLocator, ScanApi scanApi) {
         this.taskListener = taskListener;
         this.toolkitLocator = toolkitLocator;
         this.scanApi = scanApi;
@@ -64,7 +49,7 @@ public class UleskaToolkitScanner implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        MulitException exceptions = new MulitException();
+        MultiException exceptions = new MultiException();
 
         try {
             this.scanApi.close();
@@ -78,7 +63,7 @@ public class UleskaToolkitScanner implements AutoCloseable {
             exceptions.add(e);
         }
 
-        if(exceptions.isNotEmpty()){
+        if (exceptions.isNotEmpty()) {
             throw exceptions;
         }
     }
@@ -91,24 +76,6 @@ public class UleskaToolkitScanner implements AutoCloseable {
             this.taskListener.error("Unable to complete scan. Because of %s", e.getMessage());
             return false;
         }
-    }
-
-    private static class MulitException extends Exception{
-        private final List<Exception> exceptions = new ArrayList<>();
-
-        public void add(Exception e){
-            this.exceptions.add(e);
-        }
-
-        @Override
-        public String getMessage() {
-            return this.exceptions.stream().map(Exception::getMessage).collect(Collectors.joining(" and "));
-        }
-
-        public boolean isNotEmpty(){
-            return !this.exceptions.isEmpty();
-        }
-
     }
 
 }
