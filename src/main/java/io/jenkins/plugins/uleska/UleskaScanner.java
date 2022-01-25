@@ -38,6 +38,7 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
     private final String versionId;
     private final String toolkitName;
     private final boolean propagateFailure;
+    private final UleskaToolkitScannerFactory uleskaToolkitScannerFactory;
 
     @DataBoundConstructor
     public UleskaScanner(String uleskaInstanceName,
@@ -50,6 +51,8 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
         this.versionId = versionId;
         this.toolkitName = toolkitName;
         this.propagateFailure = propagateFailure;
+
+        this.uleskaToolkitScannerFactory = new UleskaToolkitScannerFactory();
     }
 
     public static String getErrors(String uleskaInstanceName, String applicationId, String versionId) {
@@ -171,8 +174,7 @@ public class UleskaScanner extends Recorder implements SimpleBuildStep {
 
     private boolean scanWithToolkits(TaskListener taskListener, String host, char[] apiKey) {
         boolean successful;
-        UleskaToolkitScannerFactory factory = new UleskaToolkitScannerFactory();
-        try (UleskaToolkitScanner scanner = factory.build(taskListener, host, apiKey)) {
+        try (UleskaToolkitScanner scanner = uleskaToolkitScannerFactory.build(taskListener, host, apiKey)) {
             successful = scanner.performScan(applicationId, versionId, toolkitName);
         } catch (Exception e) {
             successful = false;
