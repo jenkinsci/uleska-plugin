@@ -5,7 +5,6 @@ import io.jenkins.plugins.uleska.scan.ScanApi;
 import io.jenkins.plugins.uleska.scan.ScanException;
 import io.jenkins.plugins.uleska.toolkit.Toolkit;
 import io.jenkins.plugins.uleska.toolkit.ToolkitLocator;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -17,7 +16,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
@@ -38,12 +36,12 @@ public class UleskaToolkitScannerTest {
     private TaskListener taskListener = TaskListener.NULL;
 
     @Before
-    public void setUp(){
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testPerformScanWhenAppIdIsInvalid(){
+    public void testPerformScanWhenAppIdIsInvalid() {
         //given
         String appId = "This is not a UUID";
         String versionId = "ea8cfc5b-c5da-45e7-9108-ea1f66164c0c";
@@ -57,7 +55,7 @@ public class UleskaToolkitScannerTest {
     }
 
     @Test
-    public void testPerformScanWhenVersionIdIsInvalid(){
+    public void testPerformScanWhenVersionIdIsInvalid() {
         //given
         String appId = "24f071ef-6cfd-4f70-b15a-fb2161c2baa0";
         String versionId = "I don't think I'm a UUID";
@@ -84,7 +82,7 @@ public class UleskaToolkitScannerTest {
         boolean successful = scanner.performScan(appId.toString(), versionId.toString(), toolkitName);
 
         //then
-        verify(scanApi).doScan(appId,versionId,toolkitId);
+        verify(scanApi).doScan(appId, versionId, toolkitId);
         assertTrue(successful);
     }
 
@@ -104,7 +102,7 @@ public class UleskaToolkitScannerTest {
     }
 
     @Test
-    public void testPerformScanReturnsFalseWhenScanApiThrowsException() throws ScanException{
+    public void testPerformScanReturnsFalseWhenScanApiThrowsException() throws ScanException {
         //given
         UUID appId = UUID.randomUUID();
         UUID versionId = UUID.randomUUID();
