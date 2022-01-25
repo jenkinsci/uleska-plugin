@@ -15,7 +15,6 @@ public class Toolkit {
 
     private UUID id;
     private String name;
-    private boolean uleskaApproved;
 
     public UUID getId(){
         return id;
@@ -24,10 +23,5 @@ public class Toolkit {
     public String getName(){
         return name;
     }
-
-    public boolean isUleskaApproved(){
-        return uleskaApproved;
-    }
-
 
 }

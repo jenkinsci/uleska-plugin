@@ -26,6 +26,5 @@ public class ToolkitTests {
         //then
         assertEquals(expectedId, toolkit.getId());
         assertEquals(expectedName, toolkit.getName());
-        assertTrue(toolkit.isUleskaApproved());
     }
 }
