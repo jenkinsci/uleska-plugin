@@ -9,7 +9,7 @@ import java.util.UUID;
 public class HttpScanApi extends BaseHttpApi implements ScanApi {
 
     private static final String SCAN_ADDRESS = "%s/SecureDesigner/api/v1/applications/%s/versions/%s/scan";
-    private static final String SCAN_TOOLKITS_ADDRESS = "%s/SecureDesigner/api/v1/applications/%s/versions/%s/scan/%s";
+    private static final String SCAN_TOOLKITS_ADDRESS = SCAN_ADDRESS + "/%s";
 
     public HttpScanApi(TaskListener taskListener, HttpFactory httpFactory, String host, char[] apiKey) {
        super(taskListener, httpFactory, host, apiKey);
