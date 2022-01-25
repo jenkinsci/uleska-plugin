@@ -9,7 +9,7 @@ public class UleskaToolkitScannerFactoryTest {
 
 
     @Test
-    public void testBuildReturnsIntanceOfScanner() throws Exception {
+    public void testBuildReturnsInstanceOfScanner() throws Exception {
         char[] apiKey = {'a', 'b', 'c'};
         UleskaToolkitScannerFactory factory = new UleskaToolkitScannerFactory();
         try(UleskaToolkitScanner scanner = factory.build(TaskListener.NULL, "https://cloud.uleska.com", apiKey)){
