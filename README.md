@@ -1,4 +1,4 @@
-![](src/main/webapp/img/uleska-banner.jpeg)
+![](https://www.uleska.com/hs-fs/hubfs/raw_assets/public/Uleska_June_2021/images/header-logo.png?width=142&height=28&name=header-logo.png)
 
 # Uleska for Jenkins
 
@@ -14,7 +14,7 @@ releases.
 
 To use this plugin you will need a few things first:
 
- - A Uleska Platform account, [sign up here](https://www.uleska.com/sign-up)
+ - A Uleska Platform account, [sign up here](https://www.uleska.com/)
  - An API key for your account, which you can request using the API/Swagger 
  when you are authenticated
  
@@ -47,7 +47,8 @@ Each takes in the same fields:
  insert Name as string
  - **Application ID:** UUID of the application to scan a version of
  - **Version ID:** UUID of the version to scan
- - **Block Build on Failure:** Whether or not to propagate the failure of the scan 
+ - **Toolkit Name** The name of the toolkit to run eg: `Uleska Code Scan`
+ - **Block Build on Failure:** Whether to propagate the failure of the scan 
  request to the build
  
 #### 2.1. Post Build Action
@@ -67,6 +68,7 @@ step([
     uleskaInstanceName: 'Live', 
     applicationId: '00000000-1111-2222-3333-444444444444', 
     versionId: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+    toolkitName: 'Uleska Code Scan',    
     propagateFailure: true
 ])
 ```
